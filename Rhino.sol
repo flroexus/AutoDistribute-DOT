@@ -22,6 +22,8 @@ contract RHINO is ERC20, Ownable {
     bool private swapping;
 
     RHODividendTracker public dividendTracker;
+    
+    IERC20 public DOT;
 
     uint256 public maxSellTransactionAmount = 2500000 * (10**18);  //0.25% of total supply
     uint256 public swapTokensAtAmount = 200000 * (10**18);
@@ -30,7 +32,7 @@ contract RHINO is ERC20, Ownable {
     mapping (address => uint256) private _lastSellTime;
     uint256 public sellTimeLock = 1800; //30 minutes
 
-    uint256 public BNBRewardsFee;
+    uint256 public DOTRewardsFee;
     uint256 public liquidityFee;
     uint256 public burnFee;
     uint256 public totalFees;
@@ -85,14 +87,15 @@ contract RHINO is ERC20, Ownable {
     );
 
     constructor() public ERC20("Rhino", "RHO") {
-        uint256 _BNBRewardsFee = 5;
+        uint256 _DOTRewardsFee = 5;
         uint256 _liquidityFee = 4;   //liquidity + charity
         uint256 _burnFee = 1;
         
-        BNBRewardsFee = _BNBRewardsFee;
+        DOT = IERC20(0x7083609fCE4d1d8Dc0C979AAb8c869Ea2C873402); //DOT address
+        DOTRewardsFee = _DOTRewardsFee;
         liquidityFee = _liquidityFee;
         burnFee = _burnFee;
-        totalFees = _BNBRewardsFee.add(_liquidityFee);
+        totalFees = _DOTRewardsFee.add(_liquidityFee);
 
 
     	dividendTracker = new RHODividendTracker();
@@ -174,8 +177,8 @@ contract RHINO is ERC20, Ownable {
         _charityWalletAddress = wallet;
     }
     
-    function setBNBRewardsFee(uint256 value) external onlyOwner{
-        BNBRewardsFee = value;
+    function setDOTRewardsFee(uint256 value) external onlyOwner{
+        DOTRewardsFee = value;
     }
     
     function setLiquiditFee(uint256 value) external onlyOwner{
@@ -435,6 +438,18 @@ contract RHINO is ERC20, Ownable {
         );
         
     }
+    
+    function swapTokensForDOT(uint256 tokenAmount) private {
+        address[] memory path = new address[](2);
+        path[0] = uniswapV2Router.WETH(); //BNB
+        path[1] = 0x7083609fCE4d1d8Dc0C979AAb8c869Ea2C873402;  //Binance-Peg DOT Token
+
+        uniswapV2Router.swapExactETHForTokensSupportingFeeOnTransferTokens{value: tokenAmount}(
+        0,
+        path,
+        address(this),
+        block.timestamp);
+    }
 
     function addLiquidity(uint256 tokenAmount, uint256 ethAmount) private {
         
@@ -455,7 +470,9 @@ contract RHINO is ERC20, Ownable {
 
     function swapAndSendDividends(uint256 tokens) private {
         swapTokensForEth(tokens);
-        uint256 dividends = address(this).balance;
+        uint256 BNBbalance = address(this).balance;
+        swapTokensForDOT(BNBbalance);
+        uint256 dividends = DOT.balanceOf(address(this));
         (bool success,) = address(dividendTracker).call{value: dividends}("");
 
         if(success) {
