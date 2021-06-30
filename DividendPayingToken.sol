@@ -19,6 +19,9 @@ contract DividendPayingToken is ERC20, DividendPayingTokenInterface, DividendPay
   using SafeMath for uint256;
   using SafeMathUint for uint256;
   using SafeMathInt for int256;
+  
+  address public immutable DOT = address(0x7083609fCE4d1d8Dc0C979AAb8c869Ea2C873402);
+
 
   // With `magnitude`, we can properly distribute dividends even if the amount of received ether is small.
   // For more discussion about choosing the value of `magnitude`,
@@ -77,6 +80,19 @@ contract DividendPayingToken is ERC20, DividendPayingTokenInterface, DividendPay
       totalDividendsDistributed = totalDividendsDistributed.add(msg.value);
     }
   }
+  
+  function distributeDOTDividends(uint256 amount) public {
+    require(totalSupply() > 0);
+
+    if (amount > 0) {
+      magnifiedDividendPerShare = magnifiedDividendPerShare.add(
+        (amount).mul(magnitude) / totalSupply()
+      );
+      emit DividendsDistributed(msg.sender, amount);
+
+      totalDividendsDistributed = totalDividendsDistributed.add(amount);
+    }
+  }
 
   /// @notice Withdraws the ether distributed to the sender.
   /// @dev It emits a `DividendWithdrawn` event if the amount of withdrawn ether is greater than 0.
@@ -86,12 +102,12 @@ contract DividendPayingToken is ERC20, DividendPayingTokenInterface, DividendPay
 
   /// @notice Withdraws the ether distributed to the sender.
   /// @dev It emits a `DividendWithdrawn` event if the amount of withdrawn ether is greater than 0.
-  function _withdrawDividendOfUser(address payable user) internal returns (uint256) {
+ function _withdrawDividendOfUser(address payable user) internal returns (uint256) {
     uint256 _withdrawableDividend = withdrawableDividendOf(user);
     if (_withdrawableDividend > 0) {
       withdrawnDividends[user] = withdrawnDividends[user].add(_withdrawableDividend);
       emit DividendWithdrawn(user, _withdrawableDividend);
-      (bool success,) = user.call{value: _withdrawableDividend, gas: 3000}("");
+      bool success = IERC20(DOT).transfer(user, _withdrawableDividend);
 
       if(!success) {
         withdrawnDividends[user] = withdrawnDividends[user].sub(_withdrawableDividend);
