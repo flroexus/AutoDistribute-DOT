@@ -30,7 +30,7 @@ contract RHINO is ERC20, Ownable {
     
     uint256 public maxWalletBalance = 20000000 * 10**18;   //2% of total supply
     mapping (address => uint256) private _lastSellTime;
-    uint256 public sellTimeLock = 600; //30 minutes
+    uint256 public sellTimeLock = 600; //10 minutes
 
     uint256 public DOTRewardsFee = 4;
     uint256 public liquidityFee = 5;
