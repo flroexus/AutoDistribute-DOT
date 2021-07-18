@@ -37,7 +37,7 @@ contract RHINO is ERC20, Ownable {
     uint256 public burnFee = 1;
     uint256 public totalFees = DOTRewardsFee.add(liquidityFee);
     
-    address payable _charityWalletAddress = 0xFdc439304B3a7DBe7D219Cd21d24B43e720A698c;
+    address payable _charityWalletAddress = 0xC525BFf5CB8593D0b3181c3293e0D287b812191B;
 
     // sells have fees of 12 and 6 (10 * 1.2 and 5 * 1.2)
     uint256 public immutable sellFeeIncreaseFactor = 120; 
