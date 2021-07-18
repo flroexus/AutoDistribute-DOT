@@ -20,7 +20,7 @@ contract DividendPayingToken is ERC20, DividendPayingTokenInterface, DividendPay
   using SafeMathUint for uint256;
   using SafeMathInt for int256;
   
-  address public immutable DOT = address(0x7083609fCE4d1d8Dc0C979AAb8c869Ea2C873402);
+  address public immutable DOT = address(0x1d2f0da169ceb9fc7b3144628db156f3f6c60dbe);
 
 
   // With `magnitude`, we can properly distribute dividends even if the amount of received ether is small.
