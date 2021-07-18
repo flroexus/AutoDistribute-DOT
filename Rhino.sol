@@ -23,7 +23,7 @@ contract RHINO is ERC20, Ownable {
 
     RHODividendTracker public dividendTracker;
     
-    address public immutable DOT = address(0x1d2f0da169ceb9fc7b3144628db156f3f6c60dbe);
+    address public immutable DOT = address(0x1D2F0da169ceB9fC7B3144628dB156f3F6c60dBE);
 
     uint256 public maxSellTransactionAmount = 2500000 * (10**18);  //0.25% of total supply
     uint256 public swapTokensAtAmount = 200000 * (10**18);
